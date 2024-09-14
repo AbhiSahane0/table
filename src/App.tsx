@@ -19,10 +19,8 @@ interface Product {
 
 export default function CheckboxRowSelectionDemo() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<Product[] | null>(
-    null
-  );
-  const [rowClick, setRowClick] = useState<boolean>(true);
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+  const [rowClick] = useState<boolean>(true);
 
   useEffect(() => {
     ProductService.getProductsSmall().then((data) => setProducts(data));
@@ -37,7 +35,9 @@ export default function CheckboxRowSelectionDemo() {
         rowsPerPageOptions={[5, 10, 25, 50]}
         selectionMode={rowClick ? null : "checkbox"}
         selection={selectedProducts}
-        onSelectionChange={(e) => setSelectedProducts(e.value)}
+        onSelectionChange={(e: { value: Product[] | null }) =>
+          setSelectedProducts(e.value || [])
+        }
         dataKey="id"
         tableStyle={{ minWidth: "50rem" }}
       >
