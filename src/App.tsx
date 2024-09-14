@@ -26,6 +26,10 @@ export default function CheckboxRowSelectionDemo() {
     ProductService.getProductsSmall().then((data) => setProducts(data));
   }, []);
 
+  const handleIconClick = () => {
+    alert("Icon clicked!");
+  };
+
   return (
     <div className="card">
       <DataTable
@@ -45,7 +49,19 @@ export default function CheckboxRowSelectionDemo() {
           selectionMode="multiple"
           headerStyle={{ width: "3rem" }}
         ></Column>
-        <Column field="code" header="🔽 Code"></Column>
+        <Column
+          field="code"
+          header={() => (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ cursor: "pointer" }} onClick={handleIconClick}>
+                🔽
+              </span>
+              <span style={{ cursor: "pointer" }} onClick={handleIconClick}>
+                Code
+              </span>
+            </div>
+          )}
+        />
         <Column field="name" header="Name"></Column>
         <Column field="category" header="Category"></Column>
         <Column field="quantity" header="Quantity"></Column>
