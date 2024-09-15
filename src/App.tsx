@@ -36,6 +36,9 @@ export default function CheckboxRowSelectionDemo() {
   const [loading, setLoading] = useState<boolean>(false);
   const [isSelectAllChecked, setIsSelectAllChecked] = useState<boolean>(false);
 
+  //Log in to the console that how many products are being fetched
+  console.log(products);
+
   // Handle value changes in the SelectCard component
   const handleValueChange = (e: InputNumberValueChangeEvent) => {
     setValue(e.value ?? null);
