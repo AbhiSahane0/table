@@ -31,6 +31,9 @@ export default function CheckboxRowSelectionDemo() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [totalRecords, setTotalRecords] = useState(0);
 
+  // Loading state
+  const [loading, setLoading] = useState<boolean>(false); // Added loading state
+
   const handleValueChange = (e: InputNumberValueChangeEvent) => {
     setValue(e.value ?? null);
   };
@@ -55,6 +58,7 @@ export default function CheckboxRowSelectionDemo() {
   // Fetch data when currentPage or rowsPerPage changes
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Set loading to true when starting to fetch data
       try {
         const res = await fetch(
           `https://api.artic.edu/api/v1/artworks?page=${currentPage}&limit=${rowsPerPage}`
@@ -65,6 +69,8 @@ export default function CheckboxRowSelectionDemo() {
         setTotalRecords(json.pagination.total); // Set total records for pagination
       } catch (error) {
         console.error("Error fetching data: ", error);
+      } finally {
+        setLoading(false); // Set loading to false when fetching is complete
       }
     };
     fetchData();
@@ -95,6 +101,7 @@ export default function CheckboxRowSelectionDemo() {
           }
           dataKey="id"
           tableStyle={{ minWidth: "50rem" }}
+          loading={loading} // Use loading prop to show loading spinner
         >
           <Column
             selectionMode="multiple"
