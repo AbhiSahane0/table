@@ -1,3 +1,5 @@
+// Custom component for overlay panel
+
 import {
   InputNumber,
   InputNumberValueChangeEvent,
@@ -41,6 +43,7 @@ const SelectCard: React.FC<{
       >
         <div className="flex-auto" style={{ margin: "0", padding: "0" }}>
           <label className="font-bold block"></label>
+          {/* Input field */}
           <InputNumber
             placeholder="Enter no of cells."
             value={value || null}
@@ -49,6 +52,7 @@ const SelectCard: React.FC<{
             style={{ width: "200px", marginLeft: "20px" }}
           />
           <br />
+          {/* Submit button */}
           <Button
             label="Submit"
             text

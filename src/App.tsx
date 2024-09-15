@@ -68,7 +68,7 @@ export default function CheckboxRowSelectionDemo() {
             break;
           }
         } catch (error) {
-          console.error("Error fetching data for custom selection:", error);
+          console.error("Error fetching data for custom selection:", error); // Handling the edge case
           break;
         }
       }
@@ -133,6 +133,7 @@ export default function CheckboxRowSelectionDemo() {
     fetchData();
   }, [currentPage, rowsPerPage]);
 
+  // page change
   const onPageChange = (event: DataTablePageEvent) => {
     setCurrentPage(event.page !== undefined ? event.page + 1 : 1);
     setRowsPerPage(event.rows || rowsPerPage);
@@ -177,8 +178,10 @@ export default function CheckboxRowSelectionDemo() {
             header={() => (
               <div style={{ display: "flex", alignItems: "center" }}>
                 <span style={{ cursor: "pointer" }} onClick={handleIconClick}>
-                  <FontAwesomeIcon icon={faChevronDown} />
+                  <FontAwesomeIcon icon={faChevronDown} />{" "}
+                  {/* Chevron Down icon */}
                 </span>
+                {/* Overlay panel */}
                 <SelectCard
                   value={value}
                   handleValueChange={handleValueChange}
@@ -196,7 +199,7 @@ export default function CheckboxRowSelectionDemo() {
           <Column field="place_of_origin" header="Place"></Column>
           <Column field="artist_display" header="Artist"></Column>
           <Column
-            body={(rowData) => rowData?.inscriptions || "NA"}
+            body={(rowData) => rowData?.inscriptions || "NA"} // Hndling Null values
             header="Inscriptions"
           ></Column>
           <Column field="date_start" header="Start"></Column>
