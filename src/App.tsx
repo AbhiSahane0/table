@@ -3,14 +3,13 @@ import {
   DataTable,
   DataTablePageEvent,
   DataTableSelectAllChangeEvent,
-  // DataTableSelectAllChangeEvent,
 } from "primereact/datatable";
 import { Column } from "primereact/column";
 import SelectCard from "./components/SelectCard";
 import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
-// import React from "react";
+//Favicon
 
 interface Product {
   id?: string;
@@ -31,35 +30,29 @@ export default function CheckboxRowSelectionDemo() {
   const [rowClick] = useState<boolean>(true);
   const [value, setValue] = useState<number | null>(0);
   const [showSelect, handleShowSelect] = useState<boolean>(false);
-
-  // const [, setIsSelectAllChecked] = useState<boolean>(false);
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isSelectAllChecked, setIsSelectAllChecked] = useState<boolean>(false);
 
-  // Loading state
-  const [loading, setLoading] = useState<boolean>(false); // Added loading state
-
+  // Handle value changes in the SelectCard component
   const handleValueChange = (e: InputNumberValueChangeEvent) => {
     setValue(e.value ?? null);
   };
 
+  //Overlay panal
   const handleIconClick = () => {
     handleShowSelect((prev) => !prev);
     setValue(0);
   };
 
+  //Handle button submit
   const handleSubmit = async () => {
     if (value !== null && value > 0) {
-      // Calculate how many pages are needed to get the required number of products
-      const totalRowsNeeded = Math.min(value, totalRecords); // Ensure we don't exceed the available records
+      const totalRowsNeeded = Math.min(value, totalRecords);
       const pagesNeeded = Math.ceil(totalRowsNeeded / rowsPerPage);
-
       const allSelectedProducts: Product[] = [];
-
-      // Fetch data from all necessary pages
       for (let page = currentPage; page < currentPage + pagesNeeded; page++) {
         try {
           const res = await fetch(
@@ -67,11 +60,7 @@ export default function CheckboxRowSelectionDemo() {
           );
           const json = await res.json();
           const pageProducts = json.data;
-
-          // Add products from the current page to the selected list
           allSelectedProducts.push(...pageProducts);
-
-          // Stop if we have collected enough products
           if (allSelectedProducts.length >= totalRowsNeeded) {
             break;
           }
@@ -80,12 +69,10 @@ export default function CheckboxRowSelectionDemo() {
           break;
         }
       }
-
       const selectedProductsToAdd = allSelectedProducts.slice(
         0,
         totalRowsNeeded
       );
-
       setSelectedProducts((prev) => [
         ...prev,
         ...selectedProductsToAdd.filter((product) => !prev.includes(product)),
@@ -93,38 +80,39 @@ export default function CheckboxRowSelectionDemo() {
     }
   };
 
-  const [isSelectAllChecked, setIsSelectAllChecked] = useState<boolean>(false);
-
   const handleSelectAllChange = (e: DataTableSelectAllChangeEvent) => {
-    console.log("Checkbox clicked. All selected:", e.checked);
     setIsSelectAllChecked(e.checked);
-
     if (e.checked) {
-      // Select all items
-      setSelectedProducts(products);
+      // Select all products on the current page, without duplicating already selected items
+      setSelectedProducts((prevSelected) => {
+        const newSelections = products.filter(
+          (product) => !prevSelected.some((p) => p.id === product.id)
+        );
+        return [...prevSelected, ...newSelections];
+      });
     } else {
-      // Deselect all items
-      setSelectedProducts([]);
+      // Deselect only the products on the current page, preserving the previously selected items
+      setSelectedProducts((prevSelected) =>
+        prevSelected.filter(
+          (product) => !products.some((p) => p.id === product.id)
+        )
+      );
     }
   };
 
+  //Effect to selsect all rows
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest(".select-card-container") && showSelect) {
-        handleShowSelect(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showSelect]);
+    if (isSelectAllChecked) {
+      setSelectedProducts(products);
+    } else {
+      return;
+    }
+  }, [isSelectAllChecked, products]);
 
   // Fetch data when currentPage or rowsPerPage changes
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Set loading to true when starting to fetch data
+      setLoading(true);
       try {
         const res = await fetch(
           `https://api.artic.edu/api/v1/artworks?page=${currentPage}&limit=${rowsPerPage}`
@@ -132,20 +120,18 @@ export default function CheckboxRowSelectionDemo() {
         const json = await res.json();
         const data = json.data;
         setProducts(data);
-        // console.log(data);
-        setTotalRecords(json.pagination.total); // Set total records for pagination
+        setTotalRecords(json.pagination.total);
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
-        setLoading(false); // Set loading to false when fetching is complete
+        setLoading(false);
       }
     };
     fetchData();
   }, [currentPage, rowsPerPage]);
 
-  // Handle page change
   const onPageChange = (event: DataTablePageEvent) => {
-    setCurrentPage(event.page !== undefined ? event.page + 1 : 1); // Adjust for zero-indexed pages
+    setCurrentPage(event.page !== undefined ? event.page + 1 : 1);
     setRowsPerPage(event.rows || rowsPerPage);
   };
 
@@ -155,7 +141,7 @@ export default function CheckboxRowSelectionDemo() {
         <DataTable
           value={products}
           paginator
-          first={(currentPage - 1) * rowsPerPage} // Calculates the starting index for the current page
+          first={(currentPage - 1) * rowsPerPage}
           rows={rowsPerPage}
           totalRecords={totalRecords}
           rowsPerPageOptions={[5, 10, 25, 50]}
@@ -163,17 +149,19 @@ export default function CheckboxRowSelectionDemo() {
           onPage={onPageChange}
           selectionMode={rowClick ? null : "checkbox"}
           selection={selectedProducts}
-          // onSelectionChange={(e: { value: Product[] | null }) =>
-          //   setSelectedProducts(e.value || [])
-          // }
           onSelectionChange={(e: { value: Product[] | null }) => {
-            const allSelected = e.value?.length === rowsPerPage;
-            setIsSelectAllChecked(allSelected);
-            setSelectedProducts(e.value || []);
+            const newSelection = e.value || [];
+            const updatedSelection = selectedProducts.filter((product) =>
+              newSelection.some((p) => p.id === product.id)
+            );
+            const newlySelected = newSelection.filter(
+              (product) => !selectedProducts.some((p) => p.id === product.id)
+            );
+            setSelectedProducts([...updatedSelection, ...newlySelected]);
           }}
           dataKey="id"
           tableStyle={{ minWidth: "50rem" }}
-          loading={loading} // Use loading prop to show loading spinner
+          loading={loading}
           onSelectAllChange={handleSelectAllChange}
           selectAll={isSelectAllChecked}
         >
@@ -188,7 +176,6 @@ export default function CheckboxRowSelectionDemo() {
                 <span style={{ cursor: "pointer" }} onClick={handleIconClick}>
                   <FontAwesomeIcon icon={faChevronDown} />
                 </span>
-
                 <SelectCard
                   value={value}
                   handleValueChange={handleValueChange}
@@ -202,7 +189,6 @@ export default function CheckboxRowSelectionDemo() {
               </div>
             )}
           />
-
           <Column field="title" header="Name"></Column>
           <Column field="place_of_origin" header="Place"></Column>
           <Column field="artist_display" header="Artist"></Column>
