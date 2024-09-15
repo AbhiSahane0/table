@@ -26,11 +26,14 @@ export default function CheckboxRowSelectionDemo() {
   const [value, setValue] = useState<number | null>(0);
   const [showSelect, handleShowSelect] = useState<boolean>(false);
 
+  const [isSelectAllChecked, setIsSelectAllChecked] = useState<boolean>(false);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [totalRecords, setTotalRecords] = useState(0);
 
+  console.log(isSelectAllChecked);
   // Loading state
   const [loading, setLoading] = useState<boolean>(false); // Added loading state
 
@@ -66,7 +69,7 @@ export default function CheckboxRowSelectionDemo() {
         const json = await res.json();
         const data = json.data;
         setProducts(data);
-        console.log(data);
+        // console.log(data);
         setTotalRecords(json.pagination.total); // Set total records for pagination
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -97,9 +100,14 @@ export default function CheckboxRowSelectionDemo() {
           onPage={onPageChange}
           selectionMode={rowClick ? null : "checkbox"}
           selection={selectedProducts}
-          onSelectionChange={(e: { value: Product[] | null }) =>
-            setSelectedProducts(e.value || [])
-          }
+          // onSelectionChange={(e: { value: Product[] | null }) =>
+          //   setSelectedProducts(e.value || [])
+          // }
+          onSelectionChange={(e: { value: Product[] | null }) => {
+            const allSelected = e.value?.length === rowsPerPage;
+            setIsSelectAllChecked(allSelected);
+            setSelectedProducts(e.value || []);
+          }}
           dataKey="id"
           tableStyle={{ minWidth: "50rem" }}
           loading={loading} // Use loading prop to show loading spinner
