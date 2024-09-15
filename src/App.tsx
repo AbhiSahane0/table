@@ -66,6 +66,7 @@ export default function CheckboxRowSelectionDemo() {
         const json = await res.json();
         const data = json.data;
         setProducts(data);
+        console.log(data);
         setTotalRecords(json.pagination.total); // Set total records for pagination
       } catch (error) {
         console.error("Error fetching data: ", error);
