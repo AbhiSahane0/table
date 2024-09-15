@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
+import {
+  DataTable,
+  DataTablePageEvent,
+  DataTableSelectAllChangeEvent,
+  // DataTableSelectAllChangeEvent,
+} from "primereact/datatable";
 import { Column } from "primereact/column";
 import SelectCard from "./components/SelectCard";
 import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+// import React from "react";
 
 interface Product {
   id?: string;
@@ -26,14 +32,13 @@ export default function CheckboxRowSelectionDemo() {
   const [value, setValue] = useState<number | null>(0);
   const [showSelect, handleShowSelect] = useState<boolean>(false);
 
-  const [isSelectAllChecked, setIsSelectAllChecked] = useState<boolean>(false);
+  // const [, setIsSelectAllChecked] = useState<boolean>(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [totalRecords, setTotalRecords] = useState(0);
 
-  console.log(isSelectAllChecked);
   // Loading state
   const [loading, setLoading] = useState<boolean>(false); // Added loading state
 
@@ -43,6 +48,64 @@ export default function CheckboxRowSelectionDemo() {
 
   const handleIconClick = () => {
     handleShowSelect((prev) => !prev);
+    setValue(0);
+  };
+
+  const handleSubmit = async () => {
+    if (value !== null && value > 0) {
+      // Calculate how many pages are needed to get the required number of products
+      const totalRowsNeeded = Math.min(value, totalRecords); // Ensure we don't exceed the available records
+      const pagesNeeded = Math.ceil(totalRowsNeeded / rowsPerPage);
+
+      const allSelectedProducts: Product[] = [];
+
+      // Fetch data from all necessary pages
+      for (let page = currentPage; page < currentPage + pagesNeeded; page++) {
+        try {
+          const res = await fetch(
+            `https://api.artic.edu/api/v1/artworks?page=${page}&limit=${rowsPerPage}`
+          );
+          const json = await res.json();
+          const pageProducts = json.data;
+
+          // Add products from the current page to the selected list
+          allSelectedProducts.push(...pageProducts);
+
+          // Stop if we have collected enough products
+          if (allSelectedProducts.length >= totalRowsNeeded) {
+            break;
+          }
+        } catch (error) {
+          console.error("Error fetching data for custom selection:", error);
+          break;
+        }
+      }
+
+      const selectedProductsToAdd = allSelectedProducts.slice(
+        0,
+        totalRowsNeeded
+      );
+
+      setSelectedProducts((prev) => [
+        ...prev,
+        ...selectedProductsToAdd.filter((product) => !prev.includes(product)),
+      ]);
+    }
+  };
+
+  const [isSelectAllChecked, setIsSelectAllChecked] = useState<boolean>(false);
+
+  const handleSelectAllChange = (e: DataTableSelectAllChangeEvent) => {
+    console.log("Checkbox clicked. All selected:", e.checked);
+    setIsSelectAllChecked(e.checked);
+
+    if (e.checked) {
+      // Select all items
+      setSelectedProducts(products);
+    } else {
+      // Deselect all items
+      setSelectedProducts([]);
+    }
   };
 
   useEffect(() => {
@@ -111,6 +174,8 @@ export default function CheckboxRowSelectionDemo() {
           dataKey="id"
           tableStyle={{ minWidth: "50rem" }}
           loading={loading} // Use loading prop to show loading spinner
+          onSelectAllChange={handleSelectAllChange}
+          selectAll={isSelectAllChecked}
         >
           <Column
             selectionMode="multiple"
@@ -129,6 +194,7 @@ export default function CheckboxRowSelectionDemo() {
                   handleValueChange={handleValueChange}
                   showCard={showSelect}
                   handleIconClick={handleIconClick}
+                  handleSubmit={handleSubmit}
                 />
                 <span style={{ cursor: "pointer" }} onClick={handleIconClick}>
                   Code

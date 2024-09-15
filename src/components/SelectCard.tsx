@@ -11,17 +11,24 @@ const SelectCard: React.FC<{
   handleValueChange: (newValue: InputNumberValueChangeEvent) => void;
   showCard: boolean;
   handleIconClick: () => void;
-}> = ({ value, handleValueChange, showCard, handleIconClick }) => {
+  handleSubmit: () => void;
+}> = ({
+  value,
+  handleValueChange,
+  showCard,
+  handleIconClick,
+  handleSubmit,
+}) => {
   const cardStyle = {
     width: "350px",
     height: "170px",
     display: showCard ? "block" : "none",
     position: "fixed" as React.CSSProperties["position"],
     top: "50px",
-    left: "50px", 
+    left: "50px",
     backgroundColor: "white",
-    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)", 
-    zIndex: 1000, 
+    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
+    zIndex: 1000,
     padding: "10px",
     boxSizing: "border-box" as React.CSSProperties["boxSizing"],
   };
@@ -50,6 +57,7 @@ const SelectCard: React.FC<{
             onClick={() => {
               if (value) {
                 handleIconClick();
+                handleSubmit();
               } else {
                 alert("please Enter Value");
               }
